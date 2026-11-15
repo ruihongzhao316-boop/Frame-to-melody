@@ -1,0 +1,321 @@
+<div class="container">
+  <h1>旅行氛围音乐推荐引擎</h1>
+  <p class="subtitle">通过多维度输入、标签匹配与动态权重归一化，为您寻找最契合的旅行BGM</p>
+
+  <div class="main-layout">
+    <!-- 左侧：用户输入与权重配置面板 -->
+    <div class="input-panel">
+      <h2>1. 输入您的旅行偏好</h2>
+      
+      <div class="form-group">
+        <label>目的地 (Destination):</label>
+        <input type="text" id="destinationText" value="巴西里约热内卢海滩" placeholder="例如：巴黎、冰岛、里约...">
+      </div>
+
+      <div class="form-group">
+        <label>场景标签 (Scene)：<span class="tip">（来源：预设场景标签库）</span></label>
+        <select id="sceneType">
+          <option value="">-- 请选择场景 --</option>
+          <option value="beach" selected>海滩/海岸 (beach)</option>
+          <option value="mountain">高山/峡谷 (mountain)</option>
+          <option value="city_walk">城市漫步 (city_walk)</option>
+          <option value="road_trip">公路自驾 (road_trip)</option>
+          <option value="historic_town">历史小镇 (historic_town)</option>
+          <option value="cafe">咖啡馆 (cafe)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>期望情绪 (Mood Tags)：<span class="tip">（可多选）</span></label>
+        <div class="checkbox-group" id="moodCheckboxes">
+          <label><input type="checkbox" value="relaxing" checked> 放松 (relaxing)</label>
+          <label><input type="checkbox" value="peaceful" checked> 平静 (peaceful)</label>
+          <label><input type="checkbox" value="romantic"> 浪漫 (romantic)</label>
+          <label><input type="checkbox" value="uplifting"> 欢快 (uplifting)</label>
+          <label><input type="checkbox" value="melancholic"> 忧郁 (melancholic)</label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>音乐能量偏好 (Energy 1-5)：<span id="energyVal">2</span></label>
+        <input type="range" id="energyPreference" min="1" max="5" value="2">
+      </div>
+
+      <div class="form-group">
+        <label>当地音乐传统偏好：</label>
+        <label><input type="checkbox" id="localSoundPreference" checked> 优先匹配当地音乐传统 (Cultural Tags)</label>
+      </div>
+
+      <button id="matchBtn" class="primary-btn">开始匹配推荐音乐</button>
+    </div>
+
+    <!-- 右侧：推荐结果输出面板 -->
+    <div class="output-panel">
+      <h2>2. 推荐结果 (Top 3)</h2>
+      <div id="resultContainer" class="result-box">
+        <p class="placeholder-text">点击左侧“开始匹配推荐音乐”查看结果...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f0f2f5;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+  }
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+  h1 { font-size: 22px; margin-top: 0; color: #1a202c; }
+  .subtitle { color: #64748b; font-size: 13px; margin-bottom: 24px; }
+  .main-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 768px) {
+    .main-layout { grid-template-columns: 1fr; }
+  }
+  .input-panel, .output-panel {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 20px;
+    border-radius: 8px;
+  }
+  h2 { font-size: 16px; color: #3182ce; margin-top: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
+  .form-group { margin-bottom: 15px; }
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #4a5568; }
+  .tip { font-weight: normal; color: #718096; font-size: 12px; }
+  input[type="text"], select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    font-size: 13px;
+    box-sizing: border-box;
+  }
+  .checkbox-group { display: flex; flex-wrap: wrap; gap: 10px; }
+  .checkbox-group label {
+    font-weight: normal; font-size: 12px; background: #fff; padding: 4px 8px;
+    border: 1px solid #e2e8f0; border-radius: 4px; cursor: pointer;
+  }
+  input[type="range"] { width: 100%; }
+  .primary-btn {
+    background: #3182ce; color: white; border: none; width: 100%; padding: 10px;
+    border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer;
+    transition: background 0.2s; margin-top: 10px;
+  }
+  .primary-btn:hover { background: #2b6cb0; }
+  .result-box {
+    background: #fff; border: 1px solid #e2e8f0; padding: 15px;
+    border-radius: 6px; min-height: 350px; max-height: 500px; overflow-y: auto;
+  }
+  .placeholder-text { color: #a0aec0; font-size: 13px; text-align: center; margin-top: 100px; }
+  .song-item {
+    background: #f7fafc; border-left: 4px solid #3182ce; padding: 12px;
+    margin-bottom: 12px; border-radius: 0 6px 6px 0;
+  }
+  .song-title { font-weight: bold; font-size: 14px; color: #2d3748; }
+  .song-artist { font-size: 12px; color: #718096; margin-bottom: 4px; }
+  .match-score {
+    display: inline-block; background: #ebf8ff; color: #2b6cb0; font-size: 11px;
+    padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-bottom: 6px;
+  }
+  .song-reason { font-size: 12px; color: #4a5568; line-height: 1.4; margin-bottom: 8px; }
+  .song-link { display: inline-block; font-size: 11px; color: #3182ce; text-decoration: none; font-weight: bold; }
+  .song-link:hover { text-decoration: underline; }
+</style>
+
+<script>
+  const SONG_DATASET = [
+    {
+      id: "song_001",
+      title: "Bossa para Praia",
+      artist: "Trio Carioca",
+      links: "https://example.com/song_001",
+      sceneTags: ["beach", "cafe"],
+      moodTags: ["relaxing", "peaceful", "romantic"],
+      energy: 2,
+      soundTags: ["acoustic", "bossa_nova", "guitar"],
+      culturalTags: ["bossa_nova", "brazil", "rio"],
+      editorialNote: "轻松的吉他爵士节奏，非常适合海边或阳光下的慵懒午后。"
+    },
+    {
+      id: "song_002",
+      title: "Nordic Wind",
+      artist: "Aurora Fjord",
+      links: "https://example.com/song_002",
+      sceneTags: ["mountain", "road_trip"],
+      moodTags: ["peaceful", "melancholic", "nostalgic"],
+      energy: 1,
+      soundTags: ["ambient", "acoustic", "folk"],
+      culturalTags: ["nordic_folk", "iceland", "norway"],
+      editorialNote: "空灵的自然氛围音乐，完美契合高山峡谷与沉思时刻。"
+    },
+    {
+      id: "song_003",
+      title: "Midnight in Montmartre",
+      artist: "Jean-Luc & Co.",
+      links: "https://example.com/song_003",
+      sceneTags: ["city_walk", "cafe", "historic_town"],
+      moodTags: ["romantic", "relaxing"],
+      energy: 2,
+      soundTags: ["jazz", "acoustic"],
+      culturalTags: ["paris_chanson", "jazz", "france"],
+      editorialNote: "法式爵士小调，漫步巴黎街头或复古小镇夜景的绝佳伴侣。"
+    },
+    {
+      id: "song_004",
+      title: "Pacific Highwaying",
+      artist: "Sunset Coast",
+      links: "https://example.com/song_004",
+      sceneTags: ["road_trip", "beach"],
+      moodTags: ["uplifting", "adventurous"],
+      energy: 4,
+      soundTags: ["electronic", "synthwave", "pop"],
+      culturalTags: ["none"],
+      editorialNote: "动感清爽的合成器律动，陪伴沿海公路自驾的飞驰旅程。"
+    },
+    {
+      id: "song_005",
+      title: "Emerald Highlands",
+      artist: "Celtic Spirit",
+      links: "https://example.com/song_005",
+      sceneTags: ["mountain", "historic_town"],
+      moodTags: ["peaceful", "adventurous"],
+      energy: 3,
+      soundTags: ["folk", "acoustic", "orchestral"],
+      culturalTags: ["celtic", "ireland"],
+      editorialNote: "悠扬的风笛与民谣吉他，带你神游翡翠岛国的高原草甸。"
+    }
+  ];
+
+  const DEFAULT_WEIGHTS = {
+    scene: 0.30,
+    mood: 0.35,
+    energyAndSound: 0.20,
+    cultural: 0.15
+  };
+
+  function recommendSongs(input, dataset) {
+    let weights = { ...DEFAULT_WEIGHTS };
+    let activeWeights = {
+      scene: input.sceneType ? weights.scene : 0,
+      mood: (input.desiredMoodTags && input.desiredMoodTags.length > 0) ? weights.mood : 0,
+      energyAndSound: input.energyPreference ? weights.energyAndSound : 0,
+      cultural: input.localSoundPreference ? weights.cultural : 0
+    };
+
+    let totalActiveWeight = Object.values(activeWeights).reduce((a, b) => a + b, 0);
+    if (totalActiveWeight === 0) totalActiveWeight = 1;
+
+    let normWeights = {};
+    for (let key in activeWeights) {
+      normWeights[key] = activeWeights[key] / totalActiveWeight;
+    }
+
+    const scoredSongs = dataset.map(song => {
+      let score = 0;
+      let reasons = [];
+
+      if (normWeights.scene > 0 && song.sceneTags.includes(input.sceneType)) {
+        score += normWeights.scene * 1.0;
+        reasons.push(`契合“${input.sceneType}”场景`);
+      }
+
+      if (normWeights.mood > 0 && input.desiredMoodTags && input.desiredMoodTags.length > 0) {
+        let matchedMoods = song.moodTags.filter(m => input.desiredMoodTags.includes(m));
+        if (matchedMoods.length > 0) {
+          let ratio = matchedMoods.length / input.desiredMoodTags.length;
+          score += normWeights.mood * ratio;
+          reasons.push(`符合期望情绪（${matchedMoods.join('、')}）`);
+        }
+      }
+
+      if (normWeights.energyAndSound > 0 && input.energyPreference) {
+        let diff = Math.abs(song.energy - Number(input.energyPreference));
+        let energyScore = Math.max(0, 1 - (diff / 4));
+        score += normWeights.energyAndSound * energyScore;
+        if (energyScore > 0.5) {
+          reasons.push(`能量等级匹配（目标 ${input.energyPreference} / 歌曲 ${song.energy}）`);
+        }
+      }
+
+      if (normWeights.cultural > 0 && input.localSoundPreference) {
+        let isCulturalMatch = song.culturalTags.some(c => 
+          input.destinationText.toLowerCase().includes(c.toLowerCase())
+        );
+        if (isCulturalMatch) {
+          score += normWeights.cultural * 1.0;
+          reasons.push(`包含与目的地相关的当地音乐传统（${song.culturalTags.join(', ')}）`);
+        }
+      }
+
+      let finalReason = reasons.length > 0 ? reasons.join('；') + '。' : song.editorialNote;
+      return { song, score, reason: finalReason };
+    });
+
+    scoredSongs.sort((a, b) => b.score - a.score);
+    return scoredSongs.slice(0, 3);
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const energySlider = document.getElementById('energyPreference');
+    const energyVal = document.getElementById('energyVal');
+    const matchBtn = document.getElementById('matchBtn');
+
+    if (energySlider && energyVal) {
+      energySlider.addEventListener('input', (e) => {
+        energyVal.innerText = e.target.value;
+      });
+    }
+
+    if (matchBtn) {
+      matchBtn.addEventListener('click', () => {
+        const destinationText = document.getElementById('destinationText').value;
+        const sceneType = document.getElementById('sceneType').value;
+        
+        const moodCheckboxes = document.querySelectorAll('#moodCheckboxes input[type="checkbox"]:checked');
+        const desiredMoodTags = Array.from(moodCheckboxes).map(cb => cb.value);
+
+        const energyPreference = energySlider ? energySlider.value : 2;
+        const localSoundPreference = document.getElementById('localSoundPreference').checked;
+
+        const inputObj = {
+          destinationText,
+          sceneType,
+          desiredMoodTags,
+          energyPreference,
+          localSoundPreference
+        };
+
+        const results = recommendSongs(inputObj, SONG_DATASET);
+        const container = document.getElementById('resultContainer');
+        let html = '';
+
+        results.forEach((item, index) => {
+          html += `
+            <div class="song-item">
+              <div class="match-score">匹配得分: ${(item.score * 100).toFixed(0)}%</div>
+              <div class="song-title">${index + 1}. 《${item.song.title}》</div>
+              <div class="song-artist">歌手/创作者: ${item.song.artist}</div>
+              <div class="song-reason">💡 <b>推荐理由：</b>${item.reason}</div>
+              <a href="${item.song.links}" target="_blank" class="song-link">🔗 打开音乐平台</a>
+            </div>
+          `;
+        });
+
+        container.innerHTML = html;
+      });
+    }
+  });
+</script>
